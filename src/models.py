@@ -1,32 +1,109 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
+from sqlalchemy.orm import relationship, declarative_base, backref
 from sqlalchemy import create_engine
 from eralchemy2 import render_er
 
+
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+class Association(Base):
+    __tablename__ = 'association'
+    follower_id = Column(Integer, ForeignKey('follower.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+class User(Base):
+    __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    first_name = Column(String(250))
+    last_name = Column(String(250))
+    email = Column(String(250))
+    password = Column(String(250))
+    # relaciones
+    followers = relationship('Follower', secondary=Association, lazy='subquery', backref=backref('users', lazy=True))
+    posts = relationship('Post', backref='user', lazy=True)
+    storys = relationship('Story', backref='user', lazy=True)
 
-    def to_dict(self):
-        return {}
+class Follower(Base):
+    __tablename__ = 'follower'
+    id = Column(Integer, primary_key=True)
+
+class Post(Base):
+    __tablename__ = 'post'
+    id = Column(Integer, primary_key=True)
+    title = Column(String(250))
+    post_date = Column(String(250)) # seria date
+    image = Column(String(250)) # seria src
+    # relaciones
+    medias = relationship('Media', backref = 'post')
+    comments = relationship('Comment', backref = 'post')
+    user_id = Column(Integer, ForeignKey('user.id'),nullable=False)
+
+class Story(Base):
+    __tablename__ = 'story'
+    id = Column(Integer, primary_key=True)
+    title = Column(String(250))
+    post_date = Column(String(250)) # seria date
+    image = Column(String(250)) # seria src
+    # relaciones
+    user_id = Column(Integer, ForeignKey('user.id'),nullable=False)
+
+class Media(Base):
+    __tablename__ = 'media'
+    id = Column(Integer, primary_key=True)
+    type = Column(String(250), nullable=False)
+    url = Column(String(250), nullable=False)
+    # relaciones
+    post_id = Column(Integer, ForeignKey('post.id'))
+
+class Comment(Base):
+    __tablename__ = 'comment'
+    id = Column(Integer, primary_key=True)
+    author = Column(String(250), nullable=False)
+    url = Column(String(250), nullable=False)
+    # relaciones
+    post_id = Column(Integer, ForeignKey('post.id'))
+    author_id = Column(Integer, ForeignKey('user.id'))
+
+
+# class User(Base):
+#     __tablename__ = 'user'
+#     id = Column(Integer, primary_key=True)
+#     first_name = Column(String(250))
+#     last_name = Column(String(250))
+#     email = Column(String(250))
+#     password = Column(String(250))
+
+# class Follower(Base):
+#     __tablename__ = 'follower'
+#     id = Column(Integer, primary_key=True)
+#    user_id = Column(Integer, ForeignKey('user.id'))
+
+# class Post(Base):
+#     __tablename__ = 'post'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('user.id'))
+#     title = Column(String(250))
+#     post_date = Column(String(250)) # seria date
+#     image = Column(String(250)) # seria src
+
+# class Story(Base):
+#     __tablename__ = 'story'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('user.id'))
+#     title = Column(String(250))
+#     post_date = Column(String(250)) # seria date
+#     image = Column(String(250)) # seria src
+
+# class Like(Base):
+#     __tablename__ = 'like'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('user.id'))
+#     user_id = Column(Integer, ForeignKey('story.id'))
+#     user_id = Column(Integer, ForeignKey('post.id'))
+
+
 
 ## Draw from SQLAlchemy base
 try:

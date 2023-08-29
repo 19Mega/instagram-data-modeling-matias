@@ -1,0 +1,36 @@
+User
+-
+id int PK
+first_name string
+last_name string
+email string unique
+password string
+
+Follower
+-
+id int PK
+id_user FK >- User.id
+
+Post
+-
+id int PK
+id_user FK >- User.id
+title string
+post_date date
+image src
+
+Story
+-
+id int PK
+id_user FK >- User.id
+title string
+post_date date
+image src
+
+
+Like
+-
+id int PK
+id_user FK >- User.id
+id_Post FK >- Post.id
+id_Story FK >- Story.id
